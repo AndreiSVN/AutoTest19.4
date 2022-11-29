@@ -4,6 +4,7 @@ import json
 
 
 class PetFriends:
+    """Класс методов API при взаимодействии с сайтом PetFriends"""
     def __init__(self):
         self.base_url = 'https://petfriends.skillfactory.ru'
 
@@ -69,7 +70,6 @@ class PetFriends:
 
     def update_info(self, auth_key: json, pet_id: str, name: str, animal_type: str, age: str):
         """Метод предназначен для обновления информации о питомце с помощью запроса PUT в формате JSON"""
-        
         data = {'name': name,
                 'animal_type': animal_type,
                 'age': age
@@ -82,4 +82,41 @@ class PetFriends:
             result = resp.json()
         except json.decoder.JSONDecodeError:
             result = resp.text
+        return status, result
+
+    def create_new_pet(self, auth_key: json, name: str, animal_type: str, age: str):
+        """Метод предназначен для создания нового питомца на сайте PetFriends с помощью запроса POST,
+        переданного в формате JSON"""
+
+        data = {'name': name,
+                'animal_type': animal_type,
+                'age': age,
+                }
+        header = {'auth_key': auth_key['key']}
+        resp = requests.post(self.base_url + '/api/create_pet_simple', headers=header, data=data)
+        status = resp.status_code
+        result = ''
+        try:
+            result = resp.json()
+        except json.decoder.JSONDecodeError:
+            result = resp.text
+        print(result)
+        return status, result
+
+    def set_photo_pet(self, auth_key: json, pet_id: str, pet_photo: str):
+        """Метод предназначен для добавления фотографии в данные существующего питомца на сайте PetFriends с помощью запроса POST,
+        переданного в формате JSON"""
+
+        data = MultipartEncoder(
+            fields={'pet_photo': (pet_photo, open(pet_photo, 'rb'), 'image/jpeg')
+                    })
+        header = {'auth_key': auth_key['key'], 'Content-Type': data.content_type}
+        resp = requests.post(self.base_url + '/api/pets/set_photo/' + pet_id, headers=header, data=data)
+        status = resp.status_code
+        result = ''
+        try:
+            result = resp.json()
+        except json.decoder.JSONDecodeError:
+            result = resp.text
+        print(result)
         return status, result
